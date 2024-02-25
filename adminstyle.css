@@ -1,0 +1,106 @@
+body {
+    background-image: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), url(./images/maldives.jpg);
+    padding-left: 8%;
+    padding-right: 8%;
+    height: 100vh;
+
+}
+.navbar {
+    background-image: none;
+    display: flex;
+    align-items: center;
+  }
+  .buton2 {
+    padding: 10px 20px;
+    background-image: none;
+    background-color: rgb(217, 241, 235);
+    border: 2px solid rgb(133, 221, 237);
+    color: rgb(71, 143, 190);
+    border-radius: 50px;
+  }
+  #homenav{
+    margin-left: 30px;
+  }
+  
+  .buton2:hover {
+    background-color: rgb(181, 236, 217);
+    color: white;
+  }
+.logo {
+    height: 80px;
+    width: 80px;
+  }
+ul {
+    padding: 0;
+    margin: 0;
+    list-style: none;
+}
+
+ul#main li {
+    float: left;
+    position: relative;
+    width: 150px;
+}
+
+ul#main li.btn2 {
+    float: left;
+    position: relative;
+    width: 150px;
+    padding-top: 20px;
+}
+
+ul#main li ul {
+    display: none;
+}
+
+ul li.btn2 a {
+    display: block;
+    width: 150px;
+    height: 40px;
+    line-height: 50px;
+    text-align: center;
+    color: #FFF;
+    text-decoration: none;
+}
+
+ul li.btn2 a:hover {
+    border-radius: 50px;
+    background-color: rgb(102, 102, 230);
+}
+
+ul#main li.btn2:hover ul {
+    display: block;
+}
+
+#bodybox {
+    width: 300px;
+    height: 300px;
+    color: aquamarine;
+    border: #FFF;
+}
+
+.removedoc {
+    text-align: center;
+}
+.removemember {
+    text-align: center;
+}
+.removeappointment {
+    text-align: center;
+}
+.newrow {
+    background-color: rgb(169, 162, 162, 0.3);
+}
+
+#doktorsilbtn:hover {
+    background-color: rgb(212, 0, 0);
+    color: #FFF;
+}
+#uyesilbtn:hover {
+    background-color: rgb(212, 0, 0);
+    color: #FFF;
+}
+#randevusilbtn:hover {
+    background-color: rgb(212, 0, 0);
+    color: #FFF;
+}

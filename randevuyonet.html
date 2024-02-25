@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Randevu Yönetim Sayfası</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"
+        integrity="sha512-z3gLpd7yknf1YoNbCzqRKc4qyor8gaKU1qmn+CShxbuBusANI9QpRohGBreCFkKxLhei6S9CQXFEbbKuqLg0DA=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.4.1/dist/css/bootstrap.min.css"
+        integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <link rel="stylesheet" href="adminstyle.css">
+    <style>
+        .fa-times {
+    cursor: pointer;
+    }
+    
+    </style>
+</head>
+
+<body>
+    <div class="navbar">
+        <nav>
+            <ul id="main">
+                <li id="logo"><a href="adminHome.html"><img id="gohome" class="logo" src="./images/logo.jpg"
+                            alt="logo"></a>
+                </li>
+                <li id="btnuye" class="btn2"><a href="uyeYonetim.html"><i class="fa-solid fa-hospital-user"></i> Üye
+                        Yönetim</a></li>
+                <li id="btndoktor" class="btn2"><a href="doktorYonetim.html"><i class="fa-solid fa-user-doctor"></i>
+                        Doktor Yönetim</a></li>
+                <li id="btnrandevu" class="btn2"><a href="randevuyonet.html"><i
+                            class="fa-regular fa-calendar-check"></i> Randevu Yönetim</a></li>
+            </ul>
+        </nav>
+    </div>
+    <div class="container mt-3">
+        <table class="table">
+            <thead>
+                <th>RandevuID</th>
+                <th>Kimlik Numarası</th>
+                <th>Hasta Ad</th>
+                <th>Hasta Soyad</th>
+                <th>Hastane</th>
+                <th>Poliklinik</th>
+                <th>Doktor Ad</th>
+                <th>Doktor ID</th>
+                <th>Tarih</th>
+                <th>Saat</th>
+                <th style="color: rgb(120, 4, 4);" id="randevusil">Randevu Sil</th>
+            </thead>
+            <tbody class="newrow" id="tbody1"></tbody>
+        </table>
+    </div>
+
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-app.js";
+        // TODO: Add SDKs for Firebase products that you want to use
+        // https://firebase.google.com/docs/web/setup#available-libraries
+      
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+          apiKey: "AIzaSyAfaBvfk6a1MdgwpRcy8C4RlxltLZWxkjU",
+          authDomain: "hastanedb-c0c63.firebaseapp.com",
+          databaseURL: "https://hastanedb-c0c63-default-rtdb.firebaseio.com",
+          projectId: "hastanedb-c0c63",
+          storageBucket: "hastanedb-c0c63.appspot.com",
+          messagingSenderId: "1050930258925",
+          appId: "1:1050930258925:web:37bb4950f5edc29103bde4"
+        };
+      
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        
+        import {
+            getFirestore, doc, getDocs, getDoc, setDoc, collection, addDoc,deleteDoc
+        }
+            from "https://www.gstatic.com/firebasejs/10.4.0/firebase-firestore.js";
+
+        const db = getFirestore();
+
+        // --------------------------------references------------------------------------------------------------------------------
+        var tbody = document.getElementById('tbody1');
+        var randevusilbtn = document.getElementById('randevusilbtn');
+        var Kimlik = document.getElementById('adSoyadkontrol');
+        // --------------------------------Member-Functions----------------------------------------------------------------------------
+
+        async function fetchAppointments() {
+    const appointmentsRef = collection(db, 'appointments');
+
+    try {
+        const querySnapshot = await getDocs(appointmentsRef);
+
+        // Her bir randevu için tabloya bir satır eklemek
+        querySnapshot.forEach((doc) => {
+            const data = doc.data();
+            addAppointmentToTable(data);
+        });
+    } catch (error) {
+        console.error("Randevular alınırken bir hata oluştu:", error);
+    }
+}
+
+
+async function deleteAppointment(RandevuID, kimlikNo, DoktorID) {
+    if (!RandevuID || !kimlikNo || !DoktorID) {
+        console.error("Bazı gerekli bilgiler eksik!");
+        return;
+    }
+
+    const confirmation = confirm("Randevuyu silmek istediğinize emin misiniz?");
+    if (!confirmation) return;
+
+    // 1. Appointments koleksiyonundan randevuyu silme
+    const generalAppointmentRef = doc(db, 'appointments', RandevuID);
+
+    // 2. Kullanıcının randevularını silme
+    const userAppointmentRef = doc(db, 'users', kimlikNo, 'randevularim', RandevuID);
+    
+    // 3. Doktorun randevularını silme
+    const doctorAppointmentRef = doc(db, 'doctors', DoktorID, 'Randevularim', RandevuID);
+
+    try {
+        await deleteDoc(generalAppointmentRef);
+        await deleteDoc(userAppointmentRef);
+        await deleteDoc(doctorAppointmentRef);
+
+        alert("Randevu başarıyla silindi!");
+        location.reload();
+
+        // Tabloyu güncelleme
+        fetchAppointments();
+    } catch (error) {
+        console.error("Randevu silinirken bir hata oluştu:", error);
+        alert("Randevu silinirken bir hata oluştu. Lütfen tekrar deneyin.");
+    }
+}
+
+function addAppointmentToTable(appointment) {
+    const tableBody = document.getElementById('tbody1');
+
+    // Yeni bir satır oluşturma
+    let row = document.createElement("tr");
+
+    // Satıra verileri eklemek
+    row.innerHTML = `
+        <td>${appointment.RandevuID}</td>
+        <td>${appointment.kimlikNo}</td>
+        <td>${appointment.hastaAd}</td>
+        <td>${appointment.hastaSoyad}</td>
+        <td>${appointment.Hastane}</td>
+        <td>${appointment.Poliklinik}</td>
+        <td>${appointment.DoktorAd}</td>
+        <td>${appointment.DoktorID}</td>
+        <td>${appointment.Tarih}</td>
+        <td>${appointment.Saat}</td>
+        <td><i class="fa fa-times" onclick="deleteAppointment('${appointment.RandevuID}', '${appointment.kimlikNo}', '${appointment.DoktorID}')" style="cursor:pointer;"></i></td>
+    `;
+
+    // Satırı tabloya eklemek
+    tableBody.appendChild(row);
+}
+
+
+// Bu fonksiyonu sayfa yüklendiğinde çağırarak randevuları otomatik olarak getirin:
+window.onload = fetchAppointments;
+window.deleteAppointment = deleteAppointment;
+
+
+document.addEventListener('DOMContentLoaded', function() {
+        let isAdmin = localStorage.getItem('isAdmin');
+
+        if (isAdmin !== 'yes') {
+            alert('Lütfen admin girişi yapınız!');
+            localStorage.clear();
+            window.location.href = 'adminLog.html';
+        }
+        });
+        //-------------------------------------addEventListener----------------------------------------------------------------------------------------------
+        
+    </script>
+
+</body>
+
+</html>

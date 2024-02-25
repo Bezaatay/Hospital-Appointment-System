@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doktorlarımız</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"
+        integrity="sha512-z3gLpd7yknf1YoNbCzqRKc4qyor8gaKU1qmn+CShxbuBusANI9QpRohGBreCFkKxLhei6S9CQXFEbbKuqLg0DA=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.4.1/dist/css/bootstrap.min.css"
+        integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <link rel="stylesheet" href="adminstyle.css">
+
+</head>
+
+<body>
+    <div class="navbar">
+        <a href="#">
+            <img class="logo" src="./images/logo.jpg" alt="logo">
+        </a>
+        <nav>
+            <div class="ml-left">
+                <button class="buton2"><i class="fa-solid fa-plus"></i>
+                    Randevu Al</a></button>
+                <button id="anasayfa" class="buton2">
+                    <i class="fa-solid fa-hospital"></i>
+                    Anasayfa</button>
+                <button class="buton2">
+                    <i class="fa-regular fa-address-card"></i>
+                    Hakkımızda</button>
+                <button class="buton2"><i class="fa-solid fa-phone"></i>
+                    İletişim</button>
+            </div>
+        </nav>
+    </div>
+    <div class="container mt-3">
+        <table class="table">
+            <thead>
+                <th>Ad</th>
+                <th>Soyad</th>
+                <th>Gmail</th>
+                <th>Bölüm</th>
+                <th>Hastane</th>
+            </thead>
+            <tbody class="newrow" id="tbody1"></tbody>
+        </table>
+    </div>
+
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-app.js";
+        // TODO: Add SDKs for Firebase products that you want to use
+        // https://firebase.google.com/docs/web/setup#available-libraries
+
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyAfaBvfk6a1MdgwpRcy8C4RlxltLZWxkjU",
+            authDomain: "hastanedb-c0c63.firebaseapp.com",
+            databaseURL: "https://hastanedb-c0c63-default-rtdb.firebaseio.com",
+            projectId: "hastanedb-c0c63",
+            storageBucket: "hastanedb-c0c63.appspot.com",
+            messagingSenderId: "1050930258925",
+            appId: "1:1050930258925:web:37bb4950f5edc29103bde4"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+
+        import {
+            getFirestore, doc, getDoc, getDocs, setDoc, collection, addDoc
+        }
+            from "https://www.gstatic.com/firebasejs/10.4.0/firebase-firestore.js";
+
+        const db = getFirestore();
+
+        // --------------------------------references------------------------------------------------------------------------------
+        var tbody = document.getElementById('tbody1');
+        var docsilbtn = document.getElementById('doktorsilbtn');
+        var identity = document.getElementById('kimlikkontrol');
+        // --------------------------------Member-Functions----------------------------------------------------------------------------
+
+
+
+        // Tüm doktorları tabloya ekle
+
+
+        function fetchDoctors() {
+            const doctorsRef = collection(db, 'doctors');
+
+            getDocs(doctorsRef).then((snapshot) => {
+                // Her bir doktor için tabloya satır ekleme
+                snapshot.docs.forEach(doc => {
+                    const doctorData = doc.data();
+                    addDoctorToTable(
+                        doctorData.Ad,
+                        doctorData.Soyad,
+                        doctorData.Gmail,
+                        doctorData.Poliklinik,
+                        doctorData.Hastane
+                    );
+                });
+            }).catch((error) => {
+                console.error("Doktorlar alınırken bir hata oluştu:", error);
+            });
+        }
+
+        function addDoctorToTable(Ad, Soyad, Gmail, Poliklinik, Hastane) {
+            let trow = document.createElement("tr");
+
+            trow.innerHTML = `
+        <td>${Ad}</td>
+        <td>${Soyad}</td>
+        <td>${Gmail}</td>
+        <td>${Poliklinik}</td>
+        <td>${Hastane}</td>
+    `;
+
+            document.getElementById("tbody1").appendChild(trow);
+        }
+
+        // Bu fonksiyonu sayfa yüklendiğinde çağırarak doktorları otomatik olarak getirebilirsiniz:
+        window.onload = fetchDoctors;
+
+        document.addEventListener('DOMContentLoaded', function () {
+            let isDoctor = localStorage.getItem('isDoctor');
+            let isLogged = localStorage.getItem('isLogged');
+
+            if (isDoctor === 'yes') {
+                alert('Lütfen doktor üyeliğiniz ile giriş yapınız!');
+                window.location.href = 'doctorLogin.html';
+            } else if (isLogged === 'no') {
+                alert('Lütfen önce giriş yapınız!');
+                window.location.href = 'login.html';
+            }
+        });
+
+        document.getElementById('anasayfa').addEventListener('click', function () {
+            window.location.href = 'home.html';
+        })
+    </script>
+
+</body>
+
+</html>

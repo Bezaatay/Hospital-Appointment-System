@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doktor Giriş Sayfası</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"
+        integrity="sha512-z3gLpd7yknf1YoNbCzqRKc4qyor8gaKU1qmn+CShxbuBusANI9QpRohGBreCFkKxLhei6S9CQXFEbbKuqLg0DA=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="style.css">
+
+</head>
+
+<body>
+    <div class="container">
+        <div class="navbar">
+            <a href="#">
+                <img class="logo" src="./images/logo.jpg" alt="logo">
+            </a>
+            <nav>
+                <button id="uye-giris" class="buton2"><i class="fa-regular fa-user"></i>
+                    Üye Girişi</button>
+                <button class="buton2">
+                    <i class="fa-solid fa-hospital"></i>
+                    Anasayfa</button>
+                <button class="buton2">
+                    <i class="fa-regular fa-address-card"></i>
+                    Hakkımızda</button>
+                <button class="buton2"><i class="fa-solid fa-phone"></i>
+                    İletişim</button>
+
+            </nav>
+        </div>
+        <div class="sign-form">
+            <div id="sign-in" class="sign-in">
+                <form action="#" class="form" id="form1">
+                    <h2 class="giris-yap"> Giriş <i class="fa-solid fa-stethoscope"></i></h2>
+                    <input type="text" placeholder="Kimlik" id="Identitybox"> <br>
+                    <input type="text" placeholder="Mail" id="Gmailbox" /> <br>
+                    <input type="password" placeholder="Şifre" id="Passwordbox" /> <br>
+                    <label id="customSwitch1" class="remember" for="myCheckbox">Beni Hatırla</label>
+                    <input type="checkbox" id="myCheckbox"><br>
+                    <button id="Insbtn" class="Insbtn">Giriş Yap</button><br>
+                    <a class="have_acnt" href="doctorSign.html">Kayıt Ol!</a>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-app.js";
+        // TODO: Add SDKs for Firebase products that you want to use
+        // https://firebase.google.com/docs/web/setup#available-libraries
+
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyAfaBvfk6a1MdgwpRcy8C4RlxltLZWxkjU",
+            authDomain: "hastanedb-c0c63.firebaseapp.com",
+            databaseURL: "https://hastanedb-c0c63-default-rtdb.firebaseio.com",
+            projectId: "hastanedb-c0c63",
+            storageBucket: "hastanedb-c0c63.appspot.com",
+            messagingSenderId: "1050930258925",
+            appId: "1:1050930258925:web:37bb4950f5edc29103bde4"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+
+        import {
+            getFirestore, doc, getDoc, getDocs, setDoc, collection, addDoc
+        }
+            from "https://www.gstatic.com/firebasejs/10.4.0/firebase-firestore.js";
+
+        const db = getFirestore();
+
+        // --------------------------------references------------------------------------------------------------------------------
+        var Identitybox = document.getElementById("Identitybox");
+        var Gmailbox = document.getElementById("Gmailbox");
+        var Passwordbox = document.getElementById("Passwordbox");
+
+        var checkbox = document.getElementById("myCheckbox");
+        var Insbtn = document.getElementById("Insbtn");
+
+
+        //---------------------------------Authentication--------------------------------------------------------------------------
+        async function DoctorUser() {
+            event.preventDefault();
+
+            const docRef = doc(db, "doctors", Identitybox.value);
+
+            const docSnap = await getDoc(docRef);
+
+            if (docSnap.exists()) {
+                const dbData = docSnap.data();
+
+                if (dbData.Password === Passwordbox.value) {
+                    login(dbData);
+                } else {
+                    alert("Kimlik ya da Parola Hatalı!");
+                }
+            } else {
+                alert("Kullanıcı Bulunamadı!");
+            }
+        }
+
+        // ------------------------------------DECRIPTION-----------------------------------------------------------------------------
+        function decPass(dbpass) {
+            var pass12 = CryptoJS.AES.decrypt(dbpass, Passwordbox.value);
+            return pass12.toString(CryptoJS.enc.utf8);
+        }
+
+
+        // ------------------------------------------LOGIN----------------------------------------------------------------------------
+        function login(user) {
+            let keepLoggedIn = document.getElementById("myCheckbox").checked;
+
+            localStorage.setItem('doctorUserID', Identitybox.value);
+            localStorage.setItem('isDoctor', 'yes');
+            localStorage.setItem('isAdmin', 'no');
+
+
+            if (!keepLoggedIn) {
+                sessionStorage.setItem('user', JSON.stringify(user));
+                window.location = "doctorhome.html";
+            }
+            else {
+                localStorage.setItem('keepLoggedIn', 'yes');
+                localStorage.setItem('user', JSON.stringify(user));
+                window.location = "home.html";
+            }
+        }
+        document.getElementById("uye-giris").addEventListener("click", function () {
+            window.location.href = 'login.html'
+        })
+        //--------------------------------- ASSING EVENTS---------------------------------------------------------------------------
+        Insbtn.addEventListener('click', DoctorUser);
+
+
+    </script>
+
+</body>
+
+</html>

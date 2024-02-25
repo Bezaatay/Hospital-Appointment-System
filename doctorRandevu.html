@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Randevu Görüntüleme</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"
+        integrity="sha512-z3gLpd7yknf1YoNbCzqRKc4qyor8gaKU1qmn+CShxbuBusANI9QpRohGBreCFkKxLhei6S9CQXFEbbKuqLg0DA=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.4.1/dist/css/bootstrap.min.css"
+        integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
+    <link rel="stylesheet" href="adminstyle.css">
+    <style>
+        .fa-times {
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="navbar">
+        <nav><a href="#">
+                <img class="logo" id="anaLogo" src="./images/logo.jpg" alt="logo">
+            </a>
+            <button id="gotohome" class="buton2">
+                <i class="fa-solid fa-hospital"></i>
+                Anasayfa</button>
+            <button class="buton2">
+                <i class="fa-regular fa-address-card"></i>
+                Hakkımızda</button>
+            <button class="buton2"><i class="fa-solid fa-phone"></i>
+                İletişim</button>
+        </nav>
+    </div>
+
+    <div class="container mt-3">
+        <table class="table">
+            <thead>
+                <th>RandevuID</th>
+                <th>Kimlik Numarası</th>
+                <th>Hasta Adı</th>
+                <th>Hasta Soyad</th>
+                <th>Tarih</th>
+                <th>Saat</th>
+                <th style="color: rgb(120, 4, 4);" id="randevusil">Randevu Sil</th>
+            </thead>
+            <tbody class="newrow" id="tbody1"></tbody>
+        </table>
+    </div>
+
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-app.js";
+        // TODO: Add SDKs for Firebase products that you want to use
+        // https://firebase.google.com/docs/web/setup#available-libraries
+
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyAfaBvfk6a1MdgwpRcy8C4RlxltLZWxkjU",
+            authDomain: "hastanedb-c0c63.firebaseapp.com",
+            databaseURL: "https://hastanedb-c0c63-default-rtdb.firebaseio.com",
+            projectId: "hastanedb-c0c63",
+            storageBucket: "hastanedb-c0c63.appspot.com",
+            messagingSenderId: "1050930258925",
+            appId: "1:1050930258925:web:37bb4950f5edc29103bde4"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+
+        import {
+            getFirestore, doc, getDocs, getDoc, setDoc, collection, addDoc
+        }
+            from "https://www.gstatic.com/firebasejs/10.4.0/firebase-firestore.js";
+
+        const db = getFirestore();
+
+        // --------------------------------references------------------------------------------------------------------------------
+        var tbody = document.getElementById('tbody1');
+        var Kimlik = document.getElementById('adSoyadkontrol');
+        // --------------------------------Member-Functions----------------------------------------------------------------------------
+
+        async function deleteAppointment(RandevuID) {
+            if (!RandevuID) {
+                console.error("RandevuID is undefined or null!");
+                return;
+            }
+
+            // Kullanıcıdan onay al
+            const isConfirmed = window.confirm("Randevuyu silmek istediğinize emin misiniz?");
+            if (!isConfirmed) {
+                return;
+            }
+
+            // 2. Appointments koleksiyonundan randevuyu çek
+            const generalAppointmentRef = doc(db, 'appointments', RandevuID);
+            let docData = await getDoc(generalAppointmentRef);
+            if (!docData.exists()) {
+                console.error("Randevu bulunamadı!");
+                return;
+            }
+
+            let kimlikNo = docData.data().kimlikNo;
+            let doktorID = docData.data().DoktorID;
+
+            // 1. Kullanıcının Randevularim koleksiyonundan randevuyu sil
+            const userAppointmentRef = doc(db, 'users', kimlikNo, 'randevularim', RandevuID);
+
+            // 3. Doktorun Randevularim koleksiyonundan randevuyu sil
+            const doctorAppointmentRef = doc(db, 'doctors', doktorID, 'Randevularim', RandevuID);
+
+            try {
+                // Bu işlemlerin hepsini gerçekleştirelim
+                await deleteDoc(userAppointmentRef);
+                await deleteDoc(generalAppointmentRef);
+                await deleteDoc(doctorAppointmentRef);
+
+                alert("Randevu başarıyla silindi!");
+
+                // Sayfayı yeniden yükle
+                window.location.reload();
+            } catch (error) {
+                console.error("Randevu silinirken bir hata oluştu:", error);
+                alert("Randevu silinirken bir hata oluştu. Lütfen tekrar deneyin.");
+            }
+        }
+
+        async function fetchDoctorAppointments() {
+            const doctorUserID = localStorage.getItem('doctorUserID');
+
+            // LocalStorage'dan alınan doctorUserID kullanılarak doktorun randevularını çekme
+            const doctorAppointmentsRef = collection(db, 'doctors', doctorUserID, 'Randevularim');
+
+            try {
+                const querySnapshot = await getDocs(doctorAppointmentsRef);
+
+                // Her bir randevu için tabloya bir satır eklemek
+                querySnapshot.forEach((doc) => {
+                    const data = doc.data();
+                    addAppointmentToTable(data);
+                });
+            } catch (error) {
+                console.error("Doktorun randevuları alınırken bir hata oluştu:", error);
+            }
+        }
+
+        function addAppointmentToTable(appointment, RandevuID) {
+            const tableBody = document.getElementById('tbody1');
+
+            // Yeni bir satır oluşturma
+            let row = document.createElement("tr");
+
+            // Satıra verileri eklemek
+            row.innerHTML = `
+        <td>${appointment.RandevuID}</td>
+        <td>${appointment.kimlikNo}</td>
+        <td>${appointment.hastaAd}</td>
+        <td>${appointment.hastaSoyad}</td>
+        <td>${appointment.Tarih}</td>
+        <td>${appointment.Saat}</td>
+        <td><i class="fa fa-times" data-randevuid="${appointment.RandevuID}" id="deleteIcon_${RandevuID}"></i></td>
+    `;
+
+            // Satırı tabloya eklemek
+            tableBody.appendChild(row);
+            document.getElementById(`deleteIcon_${RandevuID}`).addEventListener('click', function (event) {
+                let randevuID = event.target.getAttribute('data-randevuid');
+                deleteAppointment(randevuID);
+            });
+        }
+
+        // Bu fonksiyonu sayfa yüklendiğinde çağırarak doktorun randevularını otomatik olarak getirin:
+        window.onload = fetchDoctorAppointments;
+
+        document.getElementById('gotohome').addEventListener('click', function () {
+            window.location.href = 'doctorHome.html'
+        });
+        //-------------------------------------addEventListener----------------------------------------------------------------------------------------------
+
+    </script>
+
+</body>
+
+</html>

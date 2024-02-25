@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Üye Kayıt Sayfası</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"
+        integrity="sha512-z3gLpd7yknf1YoNbCzqRKc4qyor8gaKU1qmn+CShxbuBusANI9QpRohGBreCFkKxLhei6S9CQXFEbbKuqLg0DA=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="style.css">
+
+</head>
+
+<body>
+    <div class="container">
+        <div class="navbar">
+            <a href="#">
+                <img class="logo" id="anaLogo" src="./images/logo.jpg" alt="logo">
+            </a>
+            <nav>
+                <button id="admin-btn" class="buton2"><i class="fa-solid fa-user-doctor"></i>
+                    Admin</button>
+                <button id="doc-btn" class="buton2"><i class="fa-solid fa-user-doctor"></i>
+                    Doktor Girişi</button>
+                <button id="randevu-al" class="buton2"><i class="fa-regular fa-calendar-check"></i>
+                    Randevu Al</button>
+                <button class="buton2">
+                    <i class="fa-solid fa-hospital"></i>
+                    Anasayfa</button>
+                <button class="buton2">
+                    <i class="fa-regular fa-address-card"></i>
+                    Hakkımızda</button>
+                <button class="buton2"><i class="fa-solid fa-phone"></i>
+                    İletişim</button>
+
+            </nav>
+        </div>
+        <div class="sign-form">
+            <div id="sign-out" class="sign-out">
+                <form action="#" class="form" id="form2">
+                    <h2 class="kayıt-ol">Kayıt Ol</h2>
+                    <input type="text" placeholder="Kimlik" id="Identitybox" class="input" /> <br>
+                    <input type="text" placeholder="Ad" id="name" class="input" /> <br>
+                    <input type="text" placeholder="Soyad" id="lastname" class="input" /> <br>
+                    <input type="email" placeholder="E-Posta" id="Gmailbox" class="input" /> <br>
+                    <input type="password" placeholder="Şifre" id="Passwordbox" class="input" /> <br>
+                    <input type="password" placeholder="Şifreyi Tekrar Giriniz" id="Passwordbox2" class="input" /> <br>
+                    <button id="Insbtn">Kayıt Ol</button>
+                    <a class="have_acnt" href="login.html">Hesabım Var.</a>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-app.js";
+        // TODO: Add SDKs for Firebase products that you want to use
+        // https://firebase.google.com/docs/web/setup#available-libraries
+      
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+          apiKey: "AIzaSyAfaBvfk6a1MdgwpRcy8C4RlxltLZWxkjU",
+          authDomain: "hastanedb-c0c63.firebaseapp.com",
+          databaseURL: "https://hastanedb-c0c63-default-rtdb.firebaseio.com",
+          projectId: "hastanedb-c0c63",
+          storageBucket: "hastanedb-c0c63.appspot.com",
+          messagingSenderId: "1050930258925",
+          appId: "1:1050930258925:web:37bb4950f5edc29103bde4"
+        };
+      
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        
+        import {
+            getFirestore, doc, getDoc, setDoc, collection, addDoc
+        }
+            from "https://www.gstatic.com/firebasejs/10.4.0/firebase-firestore.js";
+
+        const db = getFirestore();
+        // ---------------------------------references---------------------------------------------------------------------------
+        var namebox = document.getElementById("name");
+        var lastnamebox = document.getElementById("lastname");
+        var Identitybox = document.getElementById("Identitybox");
+        var Gmailbox = document.getElementById("Gmailbox");
+        var Password = document.getElementById("Passwordbox");
+        var Password2 = document.getElementById("Passwordbox2");
+        var Insbtn = document.getElementById("Insbtn");
+
+        // ---------------------------------register user to firebase------------------------------------------------------------
+        async function AddDocument_AutoID() {
+            var ref = collection(db, "users");
+            await addDoc(
+                ref, {
+                Ad: namebox.value,
+                Soyad: lastnamebox.value,
+                Gmail: Gmailbox.value,
+                Password: Password.value
+            })
+                .then(() => {
+                    alert("data added successfully");
+
+                })
+                .catch((error) => {
+                    alert("Unsuccessuful operation, error: " + error);
+                });
+            console.log("document id is" + docRef.id)
+        }
+
+        async function AddDocument_CustomID() {
+            const password = Password.value;
+            const confirmPassword = Password2.value;
+            const identity = Identitybox.value;
+
+            if (identity.length !== 11) {
+                alert("Kimlik 11 karakter içermelidir!");
+                return;
+            }
+            if (password !== confirmPassword) {
+                alert("Girdiğiniz şifreler aynı değil!");
+                return;
+            }
+            if (namebox.value === '') {
+                alert("İsim boş bırakılamaz!");
+                return;
+            }
+            if (lastnamebox.value === '') {
+                alert("Soyad boş bırakılamaz!");
+                return;
+            }
+            if (Gmailbox.value === '') {
+                alert("Gmail boş bırakılamaz!");
+                return;
+            }
+
+            var ref = doc(db, "users", Identitybox.value);
+            const docSnap = await getDoc(ref);
+            if (docSnap.exists()) {
+                alert('Bu Kimliğe Ait Hesap Bulunmaktadır!')
+            }
+            else{
+            await setDoc(
+                ref, {
+                Ad: namebox.value,
+                Soyad: lastnamebox.value,
+                Gmail: Gmailbox.value,
+                Password: Password.value
+            })
+                .then(() => {
+                    alert("Üyelik Oluşturuldu!");
+                    window.location.href = 'login.html';
+
+                })
+                .catch((error) => {
+                    alert("error" + error);
+                });
+            }}
+
+        // ---------------------------------function------------------------------------------------------------
+        document.getElementById("admin-btn").addEventListener('click', function () {
+            window.location.href = 'adminLog.html'
+        });
+        document.getElementById("randevu-al").addEventListener("click", function () {
+            alert('Hesabınıza giriş yapınız.');
+            window.location.href = 'login.html'
+        })
+        document.getElementById("doc-btn").addEventListener('click', function () {
+            window.location.href = 'doctorLogin.html'
+        });
+        document.getElementById("anaLogo").addEventListener('click', function () {
+            window.location.href = 'sign.html'
+        });
+
+        //--------------------------------- ASSING EVENTS---------------------------------------------------------------------------
+        Insbtn.addEventListener('click', AddDocument_CustomID);
+
+    </script>
+
+</body>
+
+</html>

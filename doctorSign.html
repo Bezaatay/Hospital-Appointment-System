@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doktor Kayıt Sayfası</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"
+        integrity="sha512-z3gLpd7yknf1YoNbCzqRKc4qyor8gaKU1qmn+CShxbuBusANI9QpRohGBreCFkKxLhei6S9CQXFEbbKuqLg0DA=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"
+        integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="style.css">
+
+</head>
+
+<body>
+    <div class="container">
+        <div class="navbar">
+            <a href="#">
+                <img class="logo" id="anaLogo" src="./images/logo.jpg" alt="logo">
+            </a>
+            <nav>
+                <button id="admin-btn" class="buton2"><i class="fa-solid fa-user-doctor"></i>
+                    Admin</button>
+                <button id="uye-giris" class="buton2"><i class="fa-regular fa-user"></i>
+                    Üye Girişi</button>
+                <button class="buton2">
+                    <i class="fa-solid fa-hospital"></i>
+                    Anasayfa</button>
+                <button class="buton2">
+                    <i class="fa-regular fa-address-card"></i>
+                    Hakkımızda</button>
+                <button class="buton2"><i class="fa-solid fa-phone"></i>
+                    İletişim</button>
+
+            </nav>
+        </div>
+
+        <div class="sign-form">
+            <div id="sign-out" class="sign-out">
+                <form action="#" class="form" id="form2">
+                    <h2 class="kayıt-ol">Yeni Doktor Kaydı</h2>
+                    <input type="text" placeholder="Kimlik" id="Identitybox" class="input" /> <br>
+                    <input type="text" placeholder="Ad" id="name" class="input" /> <br>
+                    <input type="text" placeholder="Soyad" id="lastname" class="input" /> <br>
+                    <input type="email" placeholder="E-Posta" id="Gmailbox" class="input" /> <br>
+                    <input type="password" placeholder="Şifre" id="Passwordbox" class="input" /> <br>
+                    <input type="password" placeholder="Şifreyi Tekrar Giriniz" id="Passwordbox2" class="input" /> <br>
+
+                    <select id="hastane" name="hastane">
+                        <option value="" disabled selected> Hastanenizi Seçiniz</option>
+                    </select>
+                    <br>
+
+                    <select id="poliklinik" name="poliklinik">
+                        <option value="" disabled selected> Uzmanlığınızı Seçiniz</option>
+                    </select> <br>
+
+                    <button id="Insbtn">Kayıt Ol</button>
+                    <a class="have_acnt" href="doctorLogin.html">Hesabım Var.</a>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-app.js";
+        // TODO: Add SDKs for Firebase products that you want to use
+        // https://firebase.google.com/docs/web/setup#available-libraries
+
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyAfaBvfk6a1MdgwpRcy8C4RlxltLZWxkjU",
+            authDomain: "hastanedb-c0c63.firebaseapp.com",
+            databaseURL: "https://hastanedb-c0c63-default-rtdb.firebaseio.com",
+            projectId: "hastanedb-c0c63",
+            storageBucket: "hastanedb-c0c63.appspot.com",
+            messagingSenderId: "1050930258925",
+            appId: "1:1050930258925:web:37bb4950f5edc29103bde4"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+
+        import {
+            getFirestore, doc, getDoc, getDocs, setDoc, collection, addDoc
+        }
+            from "https://www.gstatic.com/firebasejs/10.4.0/firebase-firestore.js";
+
+        const db = getFirestore();
+
+        // ---------------------------------references---------------------------------------------------------------------------
+        var namebox = document.getElementById("name");
+        var lastnamebox = document.getElementById("lastname");
+        var Identitybox = document.getElementById("Identitybox");
+        var Gmailbox = document.getElementById("Gmailbox");
+        var Password = document.getElementById("Passwordbox");
+        var Password2 = document.getElementById("Passwordbox2");
+        var Insbtn = document.getElementById("Insbtn");
+        var hastanebox = document.getElementById("hastane");
+        var poliklinikbox = document.getElementById("poliklinik");
+        document.getElementById('form2').addEventListener('submit', function (event) {
+            event.preventDefault(); // Formun sayfayı yenilemesini engelle
+            DoctorUser();
+        });
+
+
+        // ---------------------------------add hospital infos to firebase------------------------------------------------------------
+
+        window.onload = getHospitals;
+
+
+        async function getHospitals() {
+            try {
+                const colRef = collection(db, 'hospitals');
+
+                // Hastaneleri çekme
+                const hospitalSnapshot = await getDocs(colRef);
+                hospitalSnapshot.docs.forEach(doc => {
+                    const option = document.createElement('option');
+                    option.value = doc.id; // Firebase doküman id'si
+                    option.textContent = doc.id; // Dokümanın ID'sini doğrudan kullanıyoruz
+                    hastanebox.appendChild(option);
+                });
+
+
+                // Eğer hastane dokümanları mevcutsa ilk dokümanı konsolda yazdır
+                if (hospitalSnapshot.docs.length > 0) {
+                    console.log("İlk hastane dokümanı:", hospitalSnapshot.docs[0].data());
+                } else {
+                    console.log("Hastane dokümanı bulunamadı.");
+                }
+
+                // Diğer kodlar...
+
+            } catch (err) {
+                console.log(err.message);
+            }
+        }
+
+        // hastanebox seçim kutusundaki değişiklikleri dinle
+        hastanebox.addEventListener('change', loadPoliklinikler);
+
+        async function loadPoliklinikler() {
+            const selectedHospitalId = hastanebox.value;
+            if (!selectedHospitalId) return;
+
+            // Önceki poliklinikleri temizleme
+            while (poliklinikbox.firstChild) {
+                poliklinikbox.removeChild(poliklinikbox.firstChild);
+            }
+
+            // Varsayılan seçenek oluşturma
+            const defaultOption = document.createElement('option');
+            defaultOption.textContent = "Uzmanlığınızı Seçiniz";
+            defaultOption.selected = true;
+            defaultOption.disabled = true;
+            poliklinikbox.appendChild(defaultOption);
+
+            // Seçilen hastaneye ait poliklinikleri yükleme
+            const poliklinikRef = collection(db, 'hospitals', selectedHospitalId, 'policlinic');
+            const poliklinikSnapshot = await getDocs(poliklinikRef);
+
+            poliklinikSnapshot.docs.forEach(doc => {
+                const option = document.createElement('option');
+                option.value = doc.id; // Polikliniğin ID'si (Firebase tarafından otomatik olarak oluşturulan)
+                option.textContent = doc.id; // Polikliniğin ID'sini doğrudan kullanıyoruz
+                poliklinikbox.appendChild(option);
+            });
+        }
+
+
+
+
+        // ---------------------------------register user to firebase------------------------------------------------------------
+        async function DoctorUser() {
+            const password = Password.value;
+            const confirmPassword = Password2.value;
+            const identity = Identitybox.value;
+
+            if (identity.length !== 11) {
+                alert("Kimlik 11 karakter içermelidir!");
+                return;
+            }
+            if (password !== confirmPassword) {
+                alert("Girdiğiniz şifreler aynı değil!");
+                return;
+            }
+            if (namebox.value === '') {
+                alert("İsim boş bırakılamaz!");
+                return;
+            }
+            if (lastnamebox.value === '') {
+                alert("Soyad boş bırakılamaz!");
+                return;
+            }
+            if (Gmailbox.value === '') {
+                alert("Gmail boş bırakılamaz!");
+                return;
+            }
+
+            var ref = doc(db, "doctors", Identitybox.value);
+            const docSnap = await getDoc(ref);
+            if (docSnap.exists()) {
+                alert('Bu Kimliğe Ait Hesap Bulunmaktadır!')
+            }
+            else {
+                await setDoc(
+                    ref, {
+                    Ad: namebox.value,
+                    Soyad: lastnamebox.value,
+                    Kimlik: Identitybox.value,
+                    Gmail: Gmailbox.value,
+                    Password: Password.value,
+                    Poliklinik: poliklinikbox.value,
+                    Hastane: hastanebox.value
+                })
+                    .then(() => {
+                        alert("Üyelik Oluşturuldu!");
+                        //  window.location.href = 'doctorLogin.html';
+                        location.reload();
+                    })
+                    .catch((error) => {
+                        alert("error" + error);
+                    });
+            }
+        }
+
+        // ---------------------------------function------------------------------------------------------------
+        document.getElementById("admin-btn").addEventListener('click', function () {
+            window.location.href = 'adminLog.html'
+        });
+        document.getElementById("anaLogo").addEventListener('click', function () {
+            window.location.href = 'sign.html'
+        });
+
+        document.getElementById("uye-giris").addEventListener('click', function () {
+            window.location.href = 'login.html'
+        });
+
+        //--------------------------------- ASSING EVENTS---------------------------------------------------------------------------
+        Insbtn.addEventListener('click', DoctorUser);
+        hastanebox.addEventListener('change', loadPoliklinikler);
+    </script>
+
+</body>
+
+</html>

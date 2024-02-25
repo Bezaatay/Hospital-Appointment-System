@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"
+    integrity="sha512-z3gLpd7yknf1YoNbCzqRKc4qyor8gaKU1qmn+CShxbuBusANI9QpRohGBreCFkKxLhei6S9CQXFEbbKuqLg0DA=="
+    crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <title>Randevu Al</title>
+  <style>
+    body {
+      background-image: linear-gradient(rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.3)), url(./images/sky.jpg);
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding: 20px;
+    }
+
+    h1 {
+      color: #333;
+    }
+
+    form {
+      display: inline-block;
+      text-align: left;
+      border: 1px solid #ccc;
+      padding: 20px;
+      border-radius: 5px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    label {
+      display: block;
+      margin-bottom: 10px;
+      font-weight: bold;
+    }
+
+    select,
+    input[type="date"] {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 15px;
+      border: 1px solid #ccc;
+      border-radius: 3px;
+    }
+
+    input[type="submit"] {
+      background-color: #007bff;
+      color: #fff;
+      border: none;
+      padding: 10px 20px;
+      cursor: pointer;
+    }
+
+    input[type="submit"]:hover {
+      background-color: #0056b3;
+    }
+
+
+    #adSoyad {
+      width: 300px;
+      height: 34px;
+      border-radius: 3px;
+      border: 1px solid #ccc;
+      background-color: #faf5f5;
+    }
+  </style>
+</head>
+
+<body id="homePage">
+  <div class="randevuAl">
+    <h1>Randevu Alın</h1>
+    <form id="randevuForm">
+      <label for="adSoyad">Kimlik Numarası:</label>
+      <input type="text" id="adSoyad" name="kimlikNo" required>
+
+      <label for="hastane">Hastane:</label>
+      <select id="hastane" name="hastane">
+
+      </select>
+
+      <label for="poliklinik">Poliklinik:</label>
+      <select id="poliklinik" name="poliklinik">
+
+      </select>
+
+      <label for="doktor">Doktor:</label>
+      <select id="doktor" name="doktor">
+
+      </select>
+
+      <label for="tarih">Tarih:</label>
+      <input type="date" id="tarih" name="tarih">
+
+      <label for="saat">Randevu Saati:</label>
+      <select id="saat" type="submit" name="saat">
+
+      </select>
+      <br><br>
+      <input style="display: block; margin: 0 auto;" id="randevu-al" type="submit" value="Randevu Al">
+    </form>
+  </div>
+</body>
+
+<script type="module">
+  // Import the functions you need from the SDKs you need
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-app.js";
+  // TODO: Add SDKs for Firebase products that you want to use
+  // https://firebase.google.com/docs/web/setup#available-libraries
+
+  // Your web app's Firebase configuration
+  const firebaseConfig = {
+    apiKey: "AIzaSyAfaBvfk6a1MdgwpRcy8C4RlxltLZWxkjU",
+    authDomain: "hastanedb-c0c63.firebaseapp.com",
+    databaseURL: "https://hastanedb-c0c63-default-rtdb.firebaseio.com",
+    projectId: "hastanedb-c0c63",
+    storageBucket: "hastanedb-c0c63.appspot.com",
+    messagingSenderId: "1050930258925",
+    appId: "1:1050930258925:web:37bb4950f5edc29103bde4"
+  };
+
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+
+  import {
+    getFirestore, doc, getDoc, getDocs, setDoc, collection, addDoc, updateDoc, deleteDoc, deleteField
+  }
+    from "https://www.gstatic.com/firebasejs/10.4.0/firebase-firestore.js";
+
+  const db = getFirestore();
+
+
+  // ---------------------------------references---------------------------------------------------------------------------
+  var Anasayf = document.getElementById("anaLogo");
+  var RandevuAl = document.getElementById("randevu-al");
+  var tckimlik = document.getElementById("adSoyad");
+  var saat = document.getElementById("saat");
+  var hastanebox = document.getElementById("hastane");
+  var poliklinikbox = document.getElementById("poliklinik");
+
+  // ----------------------------------functions----------------------------------------------------------------------------
+  window.onload = getHospitals;
+
+
+  async function getHospitals() {
+    try {
+      const colRef = collection(db, 'hospitals');
+
+      // Hastaneleri çekme
+      const hospitalSnapshot = await getDocs(colRef);
+      hospitalSnapshot.docs.forEach(doc => {
+        const option = document.createElement('option');
+        option.value = doc.id; // Firebase doküman id'si
+        option.textContent = doc.id; // Dokümanın ID'sini doğrudan kullanıyoruz
+        hastanebox.appendChild(option);
+      });
+
+
+      // Eğer hastane dokümanları mevcutsa ilk dokümanı konsolda yazdır
+      if (hospitalSnapshot.docs.length > 0) {
+        console.log("İlk hastane dokümanı:", hospitalSnapshot.docs[0].data());
+      } else {
+        console.log("Hastane dokümanı bulunamadı.");
+      }
+
+      // Diğer kodlar...
+
+    } catch (err) {
+      console.log(err.message);
+    }
+  }
+
+  // hastanebox seçim kutusundaki değişiklikleri dinle
+  hastanebox.addEventListener('change', loadPoliklinikler);
+
+  async function loadPoliklinikler() {
+    const selectedHospitalId = hastanebox.value;
+    if (!selectedHospitalId) return;
+
+    // Önceki poliklinikleri temizleme
+    while (poliklinikbox.firstChild) {
+      poliklinikbox.removeChild(poliklinikbox.firstChild);
+    }
+
+    // Varsayılan seçenek oluşturma
+    const defaultOption = document.createElement('option');
+    defaultOption.textContent = "Uzmanlığınızı Seçiniz";
+    defaultOption.selected = true;
+    defaultOption.disabled = true;
+    poliklinikbox.appendChild(defaultOption);
+
+    // Seçilen hastaneye ait poliklinikleri yükleme
+    const poliklinikRef = collection(db, 'hospitals', selectedHospitalId, 'policlinic');
+    const poliklinikSnapshot = await getDocs(poliklinikRef);
+
+    poliklinikSnapshot.docs.forEach(doc => {
+      const option = document.createElement('option');
+      option.value = doc.id; // Polikliniğin ID'si (Firebase tarafından otomatik olarak oluşturulan)
+      option.textContent = doc.id; // Polikliniğin ID'sini doğrudan kullanıyoruz
+      poliklinikbox.appendChild(option);
+    });
+  }
+
+
+  async function getDoctorsBasedOnSelection() {
+    const selectedHospital = document.getElementById("hastane").value;
+    const selectedPoliklinik = document.getElementById("poliklinik").value;
+    const doktorBox = document.getElementById("doktor");
+
+    const colRef = collection(db, 'doctors');
+    const doctorSnapshot = await getDocs(colRef);
+
+    // Doktor seçeneklerini temizle
+    doktorBox.innerHTML = "";
+
+    doctorSnapshot.docs.forEach(doc => {
+      if (doc.data().Hastane == selectedHospital && doc.data().Poliklinik == selectedPoliklinik) {
+        const option = document.createElement('option');
+        option.value = doc.id;
+        option.textContent = doc.data().Ad;
+        doktorBox.appendChild(option);
+      }
+    });
+
+    doctorSnapshot.docs.forEach(doc => {
+      const option = document.createElement('option');
+      option.value = doc.id;
+      option.textContent = doc.data().Ad;  // Burada doktorun ismini direkt olarak seçenek içeriğine ekledik
+      doktorSelect.appendChild(option);
+    });
+  }
+
+  async function Randevular(event) {
+    event.preventDefault();
+
+    const kimlikNo = document.getElementById("adSoyad").value;
+    const selectedHospital = document.getElementById("hastane").value;
+    const selectedPoliklinik = document.getElementById("poliklinik").value;
+    const selectedDoktorID = document.getElementById("doktor").value;
+    const selectedTarih = document.getElementById("tarih").value;
+    const selectedSaat = document.getElementById("saat").value;
+
+    const doktorSelect = document.getElementById("doktor");
+
+
+
+    const selectedDoktorAd = document.getElementById("doktor").options[document.getElementById("doktor").selectedIndex].text;
+
+
+
+    // Benzersiz bir RandevuID oluşturma
+    const randevuID = 'R-' + Date.now() + '-' + Math.floor(Math.random() * 1000);
+
+    const appointmentData = {
+      kimlikNo: kimlikNo,
+      Hastane: selectedHospital,
+      Poliklinik: selectedPoliklinik,
+      DoktorID: selectedDoktorID,
+      DoktorAd: selectedDoktorAd,
+      Tarih: selectedTarih,
+      Saat: selectedSaat,
+      RandevuID: randevuID
+    };
+
+    const userID = localStorage.getItem('userID');
+    const isLogged = localStorage.getItem('isLogged');
+
+    if (kimlikNo !== userID || isLogged !== 'yes') {
+      alert("Lütfen giriş yapın!");
+
+      // LocalStorage verilerini sıfırlama
+      localStorage.clear();
+
+      setTimeout(() => {
+        window.location.href = 'login.html';
+      }, 2000);
+      return; // İşlevi sonlandır
+    }
+
+    try {
+      // Randevu bilgisini appointments koleksiyonuna kaydetme
+      const docRef = doc(db, 'appointments', randevuID);
+      await setDoc(docRef, appointmentData);
+
+      // Aynı randevu bilgisini ilgili doktorun Randevularim alt koleksiyonuna belirtilen ID ile ekleyelim
+      const doctorAppointmentDocRef = doc(db, 'doctors', selectedDoktorID, 'Randevularim', randevuID);
+      await setDoc(doctorAppointmentDocRef, appointmentData);
+
+      // Aynı randevu bilgisini kullanıcının (kimlikNo'ya göre) Randevularim alt koleksiyonuna ekleyin
+      const userAppointmentDocRef = doc(db, 'users', kimlikNo, 'randevularim', randevuID);
+      await setDoc(userAppointmentDocRef, appointmentData);
+
+      const userRef = doc(db, 'users', userID);
+      const userDoc = await getDoc(userRef);
+
+      if (!userDoc.exists()) {
+        throw new Error('Kullanıcı bulunamadı!');
+      }
+
+      const userAd = userDoc.data().Ad;
+      const userSoyad = userDoc.data().Soyad;
+
+      appointmentData.hastaAd = userAd;
+      appointmentData.hastaSoyad = userSoyad;
+
+      await setDoc(docRef, appointmentData);
+
+      // Güncellenmiş randevu bilgisini ilgili doktorun Randevularim alt koleksiyonuna ekleyin
+      await setDoc(doctorAppointmentDocRef, appointmentData);
+
+      // Güncellenmiş randevu bilgisini kullanıcının (kimlikNo'ya göre) Randevularim alt koleksiyonuna ekleyin
+      await setDoc(userAppointmentDocRef, appointmentData);
+
+      const saatRef = doc(db, 'hospitals', selectedHospital, 'policlinic', selectedPoliklinik, 'saatler', selectedSaat);
+      await updateDoc(saatRef, {
+        isEmpty: "false"
+      });
+
+      alert("Randevunuz başarıyla kaydedildi!");
+      window.location = "home.html";
+    } catch (error) {
+      console.error("Randevu kaydedilirken bir hata oluştu:", error);
+      alert("Randevu kaydedilirken bir hata oluştu. Lütfen tekrar deneyin.");
+    }
+  }
+
+  async function loadAvailableHours() {
+    const selectedHospital = document.getElementById("hastane").value;
+    const selectedPoliklinik = document.getElementById("poliklinik").value;
+    const saatBox = document.getElementById("saat");
+
+    // Saat seçeneklerini temizle
+    saatBox.innerHTML = "";
+
+    if (!selectedHospital || !selectedPoliklinik) {
+      return; // Hastane veya poliklinik seçilmemişse, işlem yapma
+    }
+    try {
+      // Seçilen hastane ve poliklinik için saatleri çekme
+      const saatRef = collection(db, 'hospitals', selectedHospital, 'policlinic', selectedPoliklinik, 'saatler');
+      const saatSnapshot = await getDocs(saatRef);
+
+      saatSnapshot.docs.forEach(doc => {
+        const option = document.createElement('option');
+        const saatData = doc.data(); // Saat verisini al
+
+        option.value = doc.id; // Saatin ID'si
+        option.textContent = doc.id; // Saatin ID'sini doğrudan kullanıyoruz (Saat burada ID olarak kullanıldığı için)
+
+        if (saatData.isEmpty === "true") {
+          // Saat müsaitse, yeşil renkle göster
+          option.style.color = 'green';
+        } else if (saatData.isEmpty === "false") {
+          // Saat müsait değilse, kırmızı renkle göster ve seçilemez yap
+          option.style.backgroundColor = 'red';
+          option.disabled = true;
+        }
+
+        saatBox.appendChild(option);
+      });
+    } catch (error) {
+      console.error("Saatler yüklenirken bir hata oluştu:", error);
+    }
+  }
+
+
+  document.getElementById("hastane").addEventListener("change", loadPoliklinikler);
+
+  document.getElementById("poliklinik").addEventListener("change", getDoctorsBasedOnSelection);
+  document.getElementById("poliklinik").addEventListener("change", loadAvailableHours);
+  // ----------------------------------addEventListener----------------------------------------------------------------------------
+  RandevuAl.addEventListener('click', Randevular);
+
+  document.addEventListener('DOMContentLoaded', function () {
+    let isDoctor = localStorage.getItem('isDoctor');
+    let isLogged = localStorage.getItem('isLogged');
+
+    if (isDoctor === 'yes') {
+      alert('Lütfen Doktor üyeliği değil normal üye olarak giriş yapınız !!');
+      window.location.href = 'login.html';
+      localStorage.setItem('isLogged', 'no');
+    } else if (isLogged === 'no') {
+      alert('Lütfen önce giriş yapınız!');
+      window.location.href = 'login.html';
+    }
+  });
+  // saat.addEventListener('click', Saatsilfunc);
+</script>
+
+</html>

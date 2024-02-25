@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Giriş Sayfası</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"
+        integrity="sha512-z3gLpd7yknf1YoNbCzqRKc4qyor8gaKU1qmn+CShxbuBusANI9QpRohGBreCFkKxLhei6S9CQXFEbbKuqLg0DA=="
+        crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <link rel="stylesheet" href="style.css">
+
+</head>
+
+<body>
+    <div class="container">
+        <div class="navbar">
+            <a href="#">
+                <img class="logo" id="anaLogo" src="./images/logo.jpg" alt="logo">
+            </a>
+            <nav>
+                <button class="buton2">
+                    <i class="fa-solid fa-hospital"></i>
+                    Anasayfa</button>
+                <button class="buton2">
+                    <i class="fa-regular fa-address-card"></i>
+                    Hakkımızda</button>
+                <button id="aa" class="buton2"><i class="fa-solid fa-phone"></i>
+                    İletişim</button>
+            </nav>
+        </div>
+        <div class="sign-form">
+            <div id="sign-in" class="sign-in">
+                <form action="#" class="form" id="form1">
+                    <h2 class="giris-yap">Giriş</h2>
+                    <input type="text" placeholder="Kimlik" id="Identitybox"> <br>
+                    <input type="text" placeholder="Mail" id="Gmailbox" /> <br>
+                    <input type="password" placeholder="Şifre" id="Passwordbox" /> <br>
+                    <button id="Insbtn" class="Insbtn">Giriş Yap</button>
+
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.4.0/firebase-app.js";
+        // TODO: Add SDKs for Firebase products that you want to use
+        // https://firebase.google.com/docs/web/setup#available-libraries
+      
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+          apiKey: "AIzaSyAfaBvfk6a1MdgwpRcy8C4RlxltLZWxkjU",
+          authDomain: "hastanedb-c0c63.firebaseapp.com",
+          databaseURL: "https://hastanedb-c0c63-default-rtdb.firebaseio.com",
+          projectId: "hastanedb-c0c63",
+          storageBucket: "hastanedb-c0c63.appspot.com",
+          messagingSenderId: "1050930258925",
+          appId: "1:1050930258925:web:37bb4950f5edc29103bde4"
+        };
+      
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        
+        import {
+            getFirestore, doc, getDoc, setDoc, collection, addDoc
+        }
+            from "https://www.gstatic.com/firebasejs/10.4.0/firebase-firestore.js";
+
+        const db = getFirestore();
+        // --------------------------------references------------------------------------------------------------------------------
+        var Identitybox = document.getElementById("Identitybox");
+        var Gmailbox = document.getElementById("Gmailbox");
+        var Passwordbox = document.getElementById("Passwordbox");
+
+        var checkbox = document.getElementById("myCheckbox");
+        var SignIn = document.getElementById("Insbtn");
+        var Anasayf = document.getElementById("anaLogo");
+
+        //    ---------------------------------Authentication--------------------------------------------------------------------------
+        async function AdminLogin() {
+            event.preventDefault();
+
+            try {
+                const userDocRef = doc(db, "admins", Identitybox.value);
+                const userDocSnapshot = await getDoc(userDocRef);
+
+                if (userDocSnapshot.exists()) {
+                    const userData = userDocSnapshot.data();
+                    const dbPassword = userData.Password;
+
+                    if (dbPassword === Passwordbox.value) {
+                        localStorage.setItem("isAdmin", "yes");
+                        window.location.href = 'adminHome.html'
+                    } else {
+                        alert("Kimlik ya da Parola Hatalı!");
+                    }
+                } else {
+                    alert("Kullanıcı Bulunamadı!");
+                }
+            } catch (error) {
+                alert("Firestore okuma hatası: " + error);
+            }
+        }
+
+        function Anasayfa() {
+            window.location.href = 'sign.html'
+        }
+
+        //--------------------------------- ASSING EVENTS---------------------------------------------------------------------------
+        SignIn.addEventListener('click', AdminLogin)
+        Anasayf.addEventListener('click', Anasayfa);
+
+    </script>
+
+</body>
+
+</html>

@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="style.css">
+    <title>Home</title>
+    <style>
+        nav {
+            padding-left: 25px;
+        }
+
+        .btnbody {
+            display: flex;
+            flex-direction: column;
+            margin-top: 40px;
+            padding: 4% 10%;
+            font-size: 40px;
+            background-image: none;
+            background-color: rgb(234, 243, 249);
+            border: 2px solid rgb(95, 179, 194);
+            color: rgb(71, 143, 190);
+            border-radius: 10px;
+        }
+
+        #doktorlarımızbtn,
+        #bölümlerimizbtn,
+        #randevularımbtn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 50px;
+            width: 500px;
+            height: 150px;
+        }
+
+        #doktorlarımızbtn:hover {
+            background-image: url(./images/doktorlarimizbtn.jpg);
+            background-size: cover;
+            color: #ffffff;
+        }
+
+        #bölümlerimizbtn:hover {
+            background-image: url(./images/bölümlerimizbtn.jpg);
+            background-size: cover;
+            color: #000000;
+        }
+
+        #randevularımbtn:hover {
+            background-image: url(./images/randevularimbtn.jpg);
+            background-size: cover;
+            color: #000000;
+        }
+
+        .flex-container {
+            display: flex;
+            align-items: center;
+        }
+
+        .buttons {
+            flex: 1;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .image {
+            flex: 1;
+            text-align: center;
+        }
+
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div style="padding-top: 10px;" class="navbar">
+            <a href="#">
+                <img class="logo" id="anaLogo" src="./images/logo.jpg" alt="logo">
+            </a>
+            <nav id="homenav">
+                <button id="randevubtn" class="buton2"><i class="fa-solid fa-plus"></i>
+                    Randevu Al</button>
+                <button class="buton2">
+                    <i class="fa-solid fa-hospital"></i>
+                    Anasayfa</button>
+                <button class="buton2">
+                    <i class="fa-regular fa-address-card"></i>
+                    Hakkımızda</button>
+                <button class="buton2"><i class="fa-solid fa-phone"></i>
+                    İletişim</button>
+                <button id="cikisbtn"></i>
+                    Çıkış</button>
+            </nav>
+        </div>
+        <div class="flex-container">
+            <div class="buttons">
+                <button id="randevularımbtn" class="btnbody">Randevularım</button>
+                <button id="doktorlarımızbtn" class="btnbody">Doktorlarımız</button>
+                <button id="bölümlerimizbtn" class="btnbody">Bölümlerimiz</button>
+            </div>
+            <div class="image">
+                <img style="width: 500px;" src="./images/doktor.png" alt="">
+            </div>
+        </div>
+    </div>
+
+    <script>
+
+        //----------------------------------references----------------------------------------------
+        var Randevu = document.getElementById("randevubtn");
+        var Randevularım = document.getElementById("randevularımbtn");
+        var Doktorlarımız = document.getElementById("doktorlarımızbtn");
+        var Bölümlerimiz = document.getElementById("bölümlerimizbtn");
+
+        //----------------------------------functions----------------------------------------------
+        function RandevuGit() {
+            window.location.href = 'randevuAl.html';
+        }
+        function RandevularımGit() {
+            window.location.href = 'randevularım.html';
+        }
+        function DoktorlarımGit() {
+            window.location.href = 'doktorlarımız.html';
+        }
+        function BölümlerimizGit() {
+            window.location.href = 'bölümlerimiz.html';
+        }
+        document.getElementById("cikisbtn").addEventListener('click', function(){
+            alert("Çıkış Yapılıyor... Lütfen Bekleyiniz")
+            localStorage.clear();
+            window.location.href = 'firstpage.html';
+        })
+        //----------------------------------addevenlisteners----------------------------------------------
+        Randevu.addEventListener('click', RandevuGit);
+        Randevularım.addEventListener('click', RandevularımGit);
+        Doktorlarımız.addEventListener('click', DoktorlarımGit);
+        Bölümlerimiz.addEventListener('click', BölümlerimizGit);
+
+        document.addEventListener('DOMContentLoaded', function () {
+            let isDoctor = localStorage.getItem('isDoctor');
+            let isLogged = localStorage.getItem('isLogged');
+
+            if (isDoctor === 'yes') {
+                alert('Lütfen doktor üyeliğiniz ile giriş yapınız!');
+                window.location.href = 'doctorLogin.html';
+            } else if (isLogged === 'no') {
+                alert('Lütfen önce giriş yapınız!');
+                window.location.href = 'login.html';
+            }
+        });
+
+
+    </script>
+
+</body>
+
+</html>
